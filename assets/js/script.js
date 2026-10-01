@@ -6,6 +6,7 @@
      2. Paste it below. The key is safe to expose publicly. */
   var WEB3FORMS_KEY = "6cf1577f-df46-42b5-b612-36af7d30a0ca";
   var WA = "919635361534";
+  var SITE_URL = "https://subhashishraha.github.io/sr-digital-point/"; // shows the preview card in WhatsApp
 
   // [icon, colour class, title, description]
   var services = [
@@ -198,7 +199,8 @@
       "Service: " + form.service.value + "\n" +
       "Preferred Contact: " + form.contact.value + "\n" +
       "Preferred Visit Date: " + visitDate() + "\n" +
-      "Requirement: " + form.message.value.trim();
+      "Requirement: " + form.message.value.trim() + "\n\n" +
+      SITE_URL;
   }
   document.getElementById("waBtn").addEventListener("click", function () {
     if (!validate()) return;
