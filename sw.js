@@ -1,6 +1,6 @@
 /* SR Digital Point — service worker
    Bump VERSION whenever you change HTML/CSS/JS so visitors get the update. */
-const VERSION = "v1.0.13";
+const VERSION = "v1.0.14";
 const STATIC_CACHE = "srdp-static-" + VERSION;
 const RUNTIME_CACHE = "srdp-runtime-" + VERSION;
 
