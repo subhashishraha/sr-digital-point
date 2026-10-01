@@ -1,0 +1,40 @@
+{
+  "id": "./",
+  "name": "SR Digital Point",
+  "short_name": "SR Digital",
+  "description": "All digital services, one place — online form fill-up, Aadhaar, Voter, printing, ticket booking and design services in Janaphul, Habra.",
+  "lang": "en",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#F3F7FE",
+  "theme_color": "#0B3FA8",
+  "categories": ["business", "utilities"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/maskable-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    {
+      "name": "Our Services",
+      "short_name": "Services",
+      "url": "./?source=shortcut#services",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Send an Enquiry",
+      "short_name": "Enquiry",
+      "url": "./?source=shortcut#enquiry",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Printing Price",
+      "short_name": "Pricing",
+      "url": "./?source=shortcut#pricing",
+      "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}
