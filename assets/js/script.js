@@ -4,7 +4,7 @@
   /* ============ CONFIG ============
      1. Create a free key at https://web3forms.com (enter the email that should receive enquiries)
      2. Paste it below. The key is safe to expose publicly. */
-  var WEB3FORMS_KEY = "YOUR_ACCESS_KEY_HERE";
+  var WEB3FORMS_KEY = "6cf1577f-df46-42b5-b612-36af7d30a0ca";
   var WA = "919635361534";
 
   // [icon, colour class, title, description]
@@ -106,13 +106,13 @@
   }, { passive: true });
   spy();
 
-  document.getElementById("year").textContent = new Date().getFullYear();
 
   /* ---------- Date: today or later (local time) ---------- */
   var d = new Date(), pad = function (n) { return String(n).padStart(2, "0"); };
   form.date.min = d.getFullYear() + "-" + pad(d.getMonth() + 1) + "-" + pad(d.getDate());
 
   /* ---------- Validation ---------- */
+  var status = document.getElementById("formStatus");
   function normMobile(v) {
     return v.replace(/[\s\-()]/g, "").replace(/^(\+91|0091|91|0)(?=\d{10}$)/, "");
   }
@@ -126,6 +126,11 @@
       if (!v) return "অনুগ্রহ করে মোবাইল নম্বর লিখুন।";
       return /^[6-9]\d{9}$/.test(normMobile(v)) ? "" : "সঠিক ১০ সংখ্যার ভারতীয় মোবাইল নম্বর লিখুন (৬, ৭, ৮ বা ৯ দিয়ে শুরু)।";
     },
+    email: function (f) {
+      var v = f.email.value.trim();
+      if (!v) return ""; // optional
+      return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v) ? "" : "সঠিক email address লিখুন (যেমন: name@gmail.com)।";
+    },
     service: function (f) { return f.service.value ? "" : "একটি service বেছে নিন।"; },
     message: function (f) {
       var v = f.message.value.trim();
@@ -137,8 +142,17 @@
     var msg = rules[k](form), el = form[k];
     document.getElementById(k + "-err").textContent = msg;
     el.classList.toggle("is-invalid", !!msg);
+    // green border only for filled fields that pass (not the checkbox)
+    el.classList.toggle("is-valid", !msg && el.type !== "checkbox" && !!String(el.value).trim());
     if (msg) el.setAttribute("aria-invalid", "true"); else el.removeAttribute("aria-invalid");
     return !msg;
+  }
+  function clearState() {
+    Object.keys(rules).forEach(function (k) {
+      form[k].classList.remove("is-invalid", "is-valid");
+      form[k].removeAttribute("aria-invalid");
+      document.getElementById(k + "-err").textContent = "";
+    });
   }
   function validate() {
     var firstBad = null;
@@ -149,17 +163,26 @@
   Object.keys(rules).forEach(function (k) {
     form[k].addEventListener("blur", function () { if (form[k].value || k === "consent") check(k); });
     form[k].addEventListener(k === "consent" || k === "service" ? "change" : "input", function () {
-      if (form[k].classList.contains("is-invalid")) check(k);
+      if (form[k].classList.contains("is-invalid") || form[k].classList.contains("is-valid")) check(k);
+      if (!status.hidden && status.classList.contains("bad")) status.hidden = true;
     });
   });
 
-  var status = document.getElementById("formStatus");
-  function showStatus(type, html) {
+  var hideTimer;
+  function showStatus(type, title, text) {
+    clearTimeout(hideTimer);
+    var icon = type === "ok" ? "bi-check-circle-fill" : type === "info" ? "bi-whatsapp" : "bi-exclamation-triangle-fill";
     status.className = "status bn " + type;
-    status.innerHTML = html;
+    status.innerHTML = '<i class="bi ' + icon + ' status-ico" aria-hidden="true"></i><div><strong>' + title +
+      "</strong><span>" + text + "</span></div>" +
+      '<button type="button" class="status-close" aria-label="Close message"><i class="bi bi-x-lg" aria-hidden="true"></i></button>';
     status.hidden = false;
     status.scrollIntoView({ block: "nearest", behavior: "smooth" });
+    if (type === "ok") hideTimer = setTimeout(function () { status.hidden = true; }, 15000);
   }
+  status.addEventListener("click", function (e) {
+    if (e.target.closest(".status-close")) status.hidden = true;
+  });
   function visitDate() {
     return form.date.value ? form.date.value.split("-").reverse().join("/") : "Not specified";
   }
@@ -171,6 +194,7 @@
       "*New Customer Enquiry*\n" +
       "Name: " + form.name.value.trim() + "\n" +
       "Mobile: " + normMobile(form.mobile.value.trim()) + "\n" +
+      (form.email.value.trim() ? "Email: " + form.email.value.trim() + "\n" : "") +
       "Service: " + form.service.value + "\n" +
       "Preferred Contact: " + form.contact.value + "\n" +
       "Preferred Visit Date: " + visitDate() + "\n" +
@@ -183,72 +207,91 @@
     // Note: window.open(..., "noopener") always returns null, so we can't use its return value as a fallback check.
     var w = window.open(url, "_blank");
     if (w) { try { w.opener = null; } catch (err) { } } else { window.location.href = url; }
-    showStatus("ok", "<strong>ধন্যবাদ!</strong> WhatsApp খোলা হয়েছে — message টি পাঠাতে <b>Send</b> চাপুন।");
+    showStatus("info", "WhatsApp খোলা হয়েছে", "Message টি তৈরি আছে — পাঠাতে WhatsApp-এ <b>Send</b> চাপুন।");
   });
 
-  /* ---------- Email enquiry via Web3Forms ---------- */
+  /* ---------- Email enquiry via Web3Forms (AJAX) ---------- */
   var submitBtn = document.getElementById("submitBtn");
+  var sending = false;
   form.addEventListener("submit", function (e) {
     e.preventDefault();
-    if (!validate()) return;
+    if (sending) return;
+    status.hidden = true;
+    if (!validate()) {
+      showStatus("bad", "Form-টি সম্পূর্ণ করুন", "লাল চিহ্নিত ঘরগুলো ঠিক করে আবার Submit করুন।");
+      form.querySelector(".is-invalid").focus();
+      return;
+    }
     if (form.botcheck.checked) return; // spam bot
-
-    if (!WEB3FORMS_KEY || WEB3FORMS_KEY.indexOf("YOUR_") === 0) {
-      console.warn("Web3Forms access key not set in assets/js/script.js");
-      showStatus("bad", "দুঃখিত, email enquiry এখনো চালু হয়নি। অনুগ্রহ করে <b>WhatsApp Enquiry</b> ব্যবহার করুন বা call করুন।");
+    if (!navigator.onLine) {
+      showStatus("bad", "Internet সংযোগ নেই", "Internet চালু করে আবার চেষ্টা করুন, অথবা <b>WhatsApp Enquiry</b> ব্যবহার করুন।");
       return;
     }
 
-    var data = {
-      access_key: WEB3FORMS_KEY,
-      subject: form.subject.value + " — " + form.service.value,
-      from_name: form.from_name.value,
-      Name: form.name.value.trim(),
-      Mobile: normMobile(form.mobile.value.trim()),
-      Service: form.service.value,
-      "Preferred Contact": form.contact.value,
-      "Preferred Visit Date": visitDate(),
-      Message: form.message.value.trim(),
-      Consent: "Yes",
-      botcheck: "",
-    };
+    // Same request format as the working reference form (multipart FormData)
+    var fd = new FormData();
+    var email = form.email.value.trim();
+    fd.append("access_key", WEB3FORMS_KEY);
+    fd.append("subject", "New Enquiry: " + form.service.value + " — " + form.name.value.trim());
+    fd.append("from_name", "SR Digital Point Website");
+    fd.append("name", form.name.value.trim());
+    if (email) { fd.append("email", email); fd.append("replyto", email); }
+    fd.append("Mobile", normMobile(form.mobile.value.trim()));
+    fd.append("Service", form.service.value);
+    fd.append("Preferred Contact", form.contact.value);
+    fd.append("Preferred Visit Date", visitDate());
+    fd.append("message", form.message.value.trim());
+    fd.append("Consent", "Yes");
+    fd.append("botcheck", "");
 
+    sending = true;
     submitBtn.disabled = true;
-    var label = submitBtn.textContent;
-    submitBtn.textContent = "Sending…";
+    var label = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<span class="spinner" aria-hidden="true"></span>Sending…';
+    form.setAttribute("aria-busy", "true");
+
+    var ctrl = "AbortController" in window ? new AbortController() : null;
+    var timer = setTimeout(function () { if (ctrl) ctrl.abort(); }, 20000);
 
     fetch("https://api.web3forms.com/submit", {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify(data),
+      headers: { Accept: "application/json" },
+      body: fd,
+      signal: ctrl ? ctrl.signal : undefined,
     })
-      .then(function (r) { return r.json().catch(function () { return { success: false }; }); })
-      .then(function (res) {
-        if (!res.success) throw new Error(res.message || "Submit failed");
-        showStatus("ok", "<strong>ধন্যবাদ!</strong> আপনার enquiry পাঠানো হয়েছে। আমরা শীঘ্রই " +
-          (form.contact.value === "Call" ? "call" : "WhatsApp") + "-এ যোগাযোগ করব।");
+      .then(function (r) {
+        return r.json().catch(function () { return {}; }).then(function (data) {
+          if (!r.ok || !data.success) throw new Error(data.message || "HTTP " + r.status);
+          return data;
+        });
+      })
+      .then(function () {
+        var who = form.name.value.trim().split(" ")[0];
+        var via = form.contact.value === "Call" ? "Call" : "WhatsApp";
         form.reset();
+        clearState();
         form.contact.value = "WhatsApp";
+        showStatus("ok", "ধন্যবাদ " + esc(who) + "! আপনার enquiry পাঠানো হয়েছে।",
+          "আমরা খুব শীঘ্রই আপনার সাথে " + via + "-এ যোগাযোগ করব।");
+        status.focus({ preventScroll: true });
       })
       .catch(function (err) {
-        console.error(err);
-        showStatus("bad", "দুঃখিত, enquiry পাঠানো যায়নি। Internet connection দেখে আবার চেষ্টা করুন অথবা <b>WhatsApp Enquiry</b> ব্যবহার করুন।");
+        console.error("Enquiry failed:", err);
+        var timeout = err && err.name === "AbortError";
+        showStatus("bad", timeout ? "সময় শেষ হয়ে গেছে" : "দুঃখিত, enquiry পাঠানো যায়নি",
+          (timeout ? "Server সাড়া দিচ্ছে না। " : "") +
+          "একটু পরে আবার চেষ্টা করুন, অথবা <b>WhatsApp Enquiry</b> ব্যবহার করুন।");
       })
       .finally(function () {
+        clearTimeout(timer);
+        sending = false;
         submitBtn.disabled = false;
-        submitBtn.textContent = label;
+        submitBtn.innerHTML = label;
+        form.removeAttribute("aria-busy");
       });
   });
 
-  /* ---------- PWA: offline support + install button ---------- */
-  if ("serviceWorker" in navigator && location.protocol !== "file:") {
-    window.addEventListener("load", function () {
-      navigator.serviceWorker.register("./sw.js").catch(function (err) {
-        console.warn("Service worker registration failed:", err);
-      });
-    });
-  }
-
+  /* ---------- PWA install button (service worker is registered in common.js) ---------- */
   var installLi = document.querySelector(".install-li");
   var deferredPrompt = null;
   window.addEventListener("beforeinstallprompt", function (e) {

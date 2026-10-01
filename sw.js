@@ -1,15 +1,17 @@
 /* SR Digital Point — service worker
    Bump VERSION whenever you change HTML/CSS/JS so visitors get the update. */
-const VERSION = "v1.0.0";
+const VERSION = "v1.0.12";
 const STATIC_CACHE = "srdp-static-" + VERSION;
 const RUNTIME_CACHE = "srdp-runtime-" + VERSION;
 
 const PRECACHE = [
   "./",
   "./index.html",
+  "./privacy-policy.html",
   "./manifest.webmanifest",
   "./assets/css/style.css",
   "./assets/js/script.js",
+  "./assets/js/common.js",
   "./assets/images/logo.png",
   "./assets/images/logo-white.png",
   "./assets/icons/icon-192.png",
@@ -23,7 +25,10 @@ const CDN_HOSTS = ["fonts.googleapis.com", "fonts.gstatic.com", "cdn.jsdelivr.ne
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(STATIC_CACHE).then((c) => c.addAll(PRECACHE)).then(() => self.skipWaiting())
+    caches.open(STATIC_CACHE)
+      // cache: "reload" skips the browser's HTTP cache so a new VERSION never stores stale files
+      .then((c) => c.addAll(PRECACHE.map((u) => new Request(u, { cache: "reload" }))))
+      .then(() => self.skipWaiting())
   );
 });
 
@@ -44,16 +49,21 @@ self.addEventListener("fetch", (event) => {
   const url = new URL(req.url);
   const sameOrigin = url.origin === self.location.origin;
 
-  // Page navigations: network first (fresh content), cached page when offline
+  // Page navigations: network first (fresh content), cached copy of THAT page when offline
   if (req.mode === "navigate" && sameOrigin) {
     event.respondWith(
       fetch(req)
         .then((res) => {
-          const copy = res.clone();
-          caches.open(STATIC_CACHE).then((c) => c.put("./index.html", copy));
+          if (res.ok) {
+            const copy = res.clone();
+            caches.open(STATIC_CACHE).then((c) => c.put(req.url.split("#")[0].split("?")[0], copy));
+          }
           return res;
         })
-        .catch(() => caches.match("./index.html", { ignoreSearch: true }))
+        .catch(() =>
+          caches.match(req, { ignoreSearch: true })
+            .then((hit) => hit || caches.match("./index.html"))
+        )
     );
     return;
   }
@@ -62,7 +72,7 @@ self.addEventListener("fetch", (event) => {
   if (sameOrigin || CDN_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.match(req, { ignoreSearch: sameOrigin }).then((cached) => {
-        const network = fetch(req)
+        const network = fetch(sameOrigin ? new Request(req, { cache: "no-cache" }) : req)
           .then((res) => {
             if (res && (res.ok || res.type === "opaque")) {
               const copy = res.clone();

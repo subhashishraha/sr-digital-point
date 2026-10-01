@@ -53,8 +53,8 @@
           <li><a href="#why">Why Us</a></li>
           <li><a href="#enquiry">Enquiry</a></li>
           <li><a href="#contact">Contact</a></li>
-          <li class="install-li" hidden><button type="button" class="install-btn"><i class="bi bi-download"
-                aria-hidden="true"></i>Install App</button></li>
+          <li class="install-li" hidden><button type="button" class="install-btn" title="Install App"><i class="bi bi-download"
+                aria-hidden="true"></i><span class="install-label">Install App</span></button></li>
         </ul>
       </nav>
 
@@ -99,18 +99,16 @@
             </div>
             <div class="ha-base"></div>
           </div>
-          <span class="tile t-aadhaar"><i class="bi bi-fingerprint"></i><small>AADHAAR</small></span>
-          <span class="tile t-ticket"><i class="bi bi-ticket-perforated-fill"></i></span>
-          <span class="tile t-vote"><i class="bi bi-box2-heart-fill"></i></span>
-          <span class="tile t-bank"><i class="bi bi-bank2"></i></span>
-          <span class="tile t-doc"><i class="bi bi-file-earmark-text-fill"></i></span>
-          <span class="tile t-list"><i class="bi bi-card-list"></i></span>
-          <span class="tile t-form"><i class="bi bi-ui-checks"></i></span>
-          <span class="tile t-print"><i class="bi bi-printer-fill"></i></span>
-          <span class="tile t-train"><i class="bi bi-train-front-fill"></i></span>
-          <span class="tile t-files"><i class="bi bi-folder-fill"></i></span>
-          <span class="ha-plane"><i class="bi bi-airplane-fill"></i></span>
-          <span class="ha-plant"><i class="bi bi-flower3"></i></span>
+          <span class="ha-arc"></span>
+          <!-- 8 tiles on a semicircle, left → right -->
+          <span class="tile a1 t-form"><i class="bi bi-ui-checks"></i></span>
+          <span class="tile a2 t-doc"><i class="bi bi-file-earmark-text-fill"></i></span>
+          <span class="tile a3 t-aadhaar"><i class="bi bi-fingerprint"></i><small>AADHAAR</small></span>
+          <span class="tile a4 t-bank"><i class="bi bi-bank2"></i></span>
+          <span class="tile a5 t-ticket"><i class="bi bi-ticket-perforated-fill"></i></span>
+          <span class="tile a6 t-print"><i class="bi bi-printer-fill"></i></span>
+          <span class="tile a7 t-train"><i class="bi bi-train-front-fill"></i></span>
+          <span class="tile a8 t-plane"><i class="bi bi-airplane-fill"></i></span>
         </div>
       </div>
     </section>
@@ -238,6 +236,12 @@
               <div class="err" id="mobile-err"></div>
             </div>
             <div class="field">
+              <label for="email">Email Address (Optional)</label>
+              <input type="email" id="email" name="email" placeholder="আপনার email লিখুন (যদি থাকে)" inputmode="email"
+                autocomplete="email" maxlength="120" aria-describedby="email-err">
+              <div class="err" id="email-err"></div>
+            </div>
+            <div class="field">
               <label for="service">Service <span class="req" aria-hidden="true">*</span></label>
               <div class="select-wrap">
                 <select id="service" name="service" required aria-describedby="service-err">
@@ -259,7 +263,7 @@
                 <input type="date" id="date" name="visit_date">
               </div>
             </div>
-            <div class="field">
+            <div class="field field-full">
               <label for="message">Message / Requirement <span class="req" aria-hidden="true">*</span></label>
               <textarea id="message" name="message" rows="3"
                 placeholder="আপনার প্রয়োজনীয় service বা enquiry এখানে লিখুন..." required
@@ -271,7 +275,7 @@
           <div class="consent">
             <label class="check bn" lang="bn"><input type="checkbox" id="consent" name="consent" value="Yes" required
                 aria-describedby="consent-err"><span>আমি যে তথ্য দিয়েছি তা enquiry-এর উত্তর দেওয়ার জন্য ব্যবহার করা
-                যেতে পারে।</span></label>
+                যেতে পারে। (<a href="./privacy-policy.html" target="_blank">Privacy Policy</a>)</span></label>
             <div class="err" id="consent-err"></div>
           </div>
 
@@ -280,7 +284,7 @@
             <button type="button" id="waBtn" class="btn btn-wa-outline"><i class="bi bi-whatsapp"
                 aria-hidden="true"></i>WhatsApp Enquiry</button>
           </div>
-          <div id="formStatus" class="status bn" role="status" aria-live="polite" hidden></div>
+          <div id="formStatus" class="status bn" lang="bn" role="status" aria-live="polite" tabindex="-1" hidden></div>
         </form>
 
         <aside class="help-card glass" aria-labelledby="help-title">
@@ -305,25 +309,8 @@
 
     <!-- ================= CONTACT ================= -->
     <section id="contact" class="section-tight contact" aria-labelledby="contact-title">
-      <div class="container contact-grid">
-        <div class="contact-info">
-          <h2 id="contact-title" class="h2-sm">Contact Us</h2>
-          <ul class="c-list">
-            <li><i class="bi bi-geo-alt-fill" aria-hidden="true"></i>
-              <div><small>Location</small>Janaphul, Habra, West Bengal</div>
-            </li>
-            <li><i class="bi bi-telephone-fill" aria-hidden="true"></i>
-              <div><small>Call</small><a href="tel:+919635361534">9635361534</a></div>
-            </li>
-            <li><i class="bi bi-whatsapp c-wa" aria-hidden="true"></i>
-              <div><small>WhatsApp</small><a href="https://wa.me/919635361534?text=Hello%20SR%20Digital%20Point%21%20%F0%9F%91%8B%0AI%20found%20you%20through%20your%20website%20and%20would%20like%20to%20know%20more%20about%20your%20services.%0A%E0%A6%A8%E0%A6%AE%E0%A6%B8%E0%A7%8D%E0%A6%95%E0%A6%BE%E0%A6%B0%2C%20%E0%A6%86%E0%A6%AE%E0%A6%BF%20%E0%A6%86%E0%A6%AA%E0%A6%A8%E0%A6%BE%E0%A6%B0%20service%20%E0%A6%B8%E0%A6%AE%E0%A7%8D%E0%A6%AA%E0%A6%B0%E0%A7%8D%E0%A6%95%E0%A7%87%20%E0%A6%9C%E0%A6%BE%E0%A6%A8%E0%A6%A4%E0%A7%87%20%E0%A6%9A%E0%A6%BE%E0%A6%87%E0%A5%A4" target="_blank"
-                  rel="noopener">9635361534</a></div>
-            </li>
-            <li><i class="bi bi-clock" aria-hidden="true"></i>
-              <div><small>Opening Hours</small>Mon–Sat: 9:00 AM – 8:00 PM<br>Sun: 10:00 AM – 2:00 PM</div>
-            </li>
-          </ul>
-        </div>
+      <div class="container">
+        <h2 id="contact-title" class="sr-only">Contact Us</h2>
 
         <div class="map-card glass">
           <div class="map-wrap">
@@ -352,14 +339,22 @@
     <div class="container footer-inner">
       <div class="f-brand">
         <img src="./assets/images/logo-white.png" alt="SR Digital logo" width="56" height="48">
-        <div><strong>SR Digital Point</strong><small>Digital Services • Online Services • Printing • Design</small></div>
+        <div><strong>SR Digital Point</strong>
+          <ul class="f-tags" aria-label="What we do">
+            <li>Digital Services</li>
+            <li>Online Services</li>
+            <li>Printing</li>
+            <li>Design</li>
+          </ul>
+        </div>
       </div>
       <div class="f-item"><i class="bi bi-geo-alt-fill" aria-hidden="true"></i><span>Janaphul, Habra,<br>West
           Bengal</span></div>
+      <div class="f-item"><i class="bi bi-clock-fill" aria-hidden="true"></i><span><b>Opening Hours</b>Mon–Sat: 9:00 AM – 8:00 PM<br>Sun: 10:00 AM – 2:00 PM</span></div>
       <a class="f-item" href="tel:+919635361534"><i class="bi bi-telephone-fill" aria-hidden="true"></i>9635361534</a>
       <a class="f-item" href="https://www.facebook.com/SrDegitalStudio.28" target="_blank" rel="noopener"><i
           class="bi bi-facebook" aria-hidden="true"></i>Facebook</a>
-      <p class="f-copy">© <span id="year">2026</span> SR Digital Point<br>All Rights Reserved.</p>
+      <p class="f-copy">© <span id="year">2026</span> SR Digital Point. All Rights Reserved.<span class="f-sep" aria-hidden="true">•</span><a href="./privacy-policy.html">Privacy Policy</a></p>
     </div>
   </footer>
 
@@ -371,6 +366,12 @@
     </div>
   </nav>
 
+  <button type="button" class="to-top" aria-label="Back to top" title="Back to top">
+    <svg viewBox="0 0 48 48" aria-hidden="true"><circle class="to-top-track" cx="24" cy="24" r="22" /><circle class="to-top-ring" cx="24" cy="24" r="22" /></svg>
+    <i class="bi bi-arrow-up" aria-hidden="true"></i>
+  </button>
+
+  <script src="./assets/js/common.js" defer></script>
   <script src="./assets/js/script.js" defer></script>
 </body>
 
